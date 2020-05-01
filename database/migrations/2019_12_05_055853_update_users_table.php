@@ -14,12 +14,16 @@ class UpdateUsersTable extends Migration
     public function up()
     {
       Schema::table('users', function (Blueprint $table) {
-          $table->string('hp')->after('password')->nullable();
-          $table->string('address')->after('hp')->nullable();
-          $table->string('status')->after('address')->nullable();
-          $table->string('photo')->after('status')->nullable();
-          $table->integer('id_family')->after('photo')->unsigned()->nullable();
-          $table->foreign('id_family')->references('id')->on('families')->onUpdate('cascade')->onDelete('cascade');
+          $table->string('hp')->nullable();
+          $table->string('address')->nullable();
+          $table->string('status')->nullable();
+          $table->string('photo')->nullable();
+          $table->string('username')->unique()->nullable();
+          $table->integer('type')->nullable();
+          $table->integer('majors')->nullable();
+          $table->integer('faculty')->nullable();
+          $table->timestamp('verified')->nullable();
+          $table->timestamp('pin')->nullable();
       });
     }
 
@@ -35,7 +39,13 @@ class UpdateUsersTable extends Migration
         $table->dropColumn('address');
         $table->dropColumn('status');
         $table->dropColumn('photo');
-        $table->dropColumn('id_family');
+        $table->dropColumn('username');
+        $table->dropColumn('type');
+        $table->dropColumn('majors');
+        $table->dropColumn('faculty');
+        $table->dropColumn('password');
+        $table->dropColumn('verified');
+        $table->dropColumn('pin');
       });
     }
 }

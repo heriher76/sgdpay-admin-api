@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLoggersTable extends Migration
+class CreateMajorsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreateLoggersTable extends Migration
      */
     public function up()
     {
-        Schema::create('loggers', function (Blueprint $table) {
+        Schema::create('majors', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->boolean('status')->nullable();
-            $table->integer('id_user')->unsigned()->nullable();
-            $table->foreign('id_user')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->string('name')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +27,6 @@ class CreateLoggersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('loggers');
+        Schema::dropIfExists('majors');
     }
 }

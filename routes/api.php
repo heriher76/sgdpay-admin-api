@@ -13,36 +13,28 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::group(['middleware' => ['auth', 'role:parent']], function () use ($router) {
-  Route::post('register-child', 'AuthController@registerChild');
-  Route::post('family/create', 'FamilyController@store');
-  Route::put('family/update', 'FamilyController@update');
-  //STATUS
-  Route::put('users/status/{id}', 'UserController@updateStatus');
-  Route::put('users/timer/{id}', 'UserController@updateTimer');
+Route::group(['middleware' => ['auth', 'role:admin']], function () use ($router) {
+  //ADMIN
+  Route::get('user-admin', 'UserController@getAdmins');
+  Route::post('admin/register', 'AuthController@registerAdmin');
+  Route::delete('users/{id}', 'UserController@destroy');
+  Route::put('users/other/{id}', 'UserController@updateOther');
+
+  Route::resource('majors', 'MajorController');
+  Route::resource('faculties', 'FacultyController');
+  Route::resource('news', 'NewsController');
+  Route::resource('sliders', 'SliderController');
 });
+
 Route::group(['middleware' => 'auth'], function () use ($router) {
   //PROFILE
   Route::get('profile', 'UserController@profile');
-  Route::put('profile/edit', 'UserController@editProfile');
+  Route::put('profile/edit', 'UserController@update');
   Route::put('profile/photo', 'UserController@editPhoto');
   Route::put('profile/password', 'UserController@editPassword');
-  //GCM TOKEN
-  Route::put('users/storegcmtoken', 'UserController@storeGCMToken');
-  //GET USER
-  Route::get('users', 'UserController@allUsers');
-  Route::get('users/{id}', 'UserController@singleUser');
-  //EVENT
-  Route::get('event', 'EventController@index');
-  Route::post('event/create', 'EventController@store');
-  Route::put('event/update/{id}', 'EventController@update');
-  Route::delete('event/delete/{id}', 'EventController@destroy');
-  //LOCATION
-  Route::put('location/update', 'LocationController@update');
-  Route::get('location/{id}', 'LocationController@getLocation');
-  //MESSAGE
-  Route::get('messages', 'ChatsController@fetchMessages');
-  Route::post('messages/create', 'ChatsController@sendMessage');
+  //USER
+  Route::resource('users', 'UserController', ['except' => ['getAdmins', 'destroy', 'updateOther']]);
 });
-Route::post('register', 'AuthController@register'); // register parent
+
+Route::post('register', 'AuthController@register'); // register mahasiswa
 Route::post('login', 'AuthController@login'); // login all

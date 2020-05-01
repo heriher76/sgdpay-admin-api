@@ -10,14 +10,19 @@ use Carbon\Carbon;
 
 class UserController extends Controller
 {
-     /**
-     * Instantiate a new UserController instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function getAdmins()
     {
-        $this->middleware('auth');
+        return response()->json(['admins' => User::role('admin')->get(), 'message' => 'get admin user success'], 200);
+    }
+
+    public function index()
+    {
+        return response()->json(['users' => User::role('user')->get(), 'message' => 'get user success'], 200);
+    }
+
+    public function show($id)
+    {
+        return response()->json(['users' => User::findOrFail($id), 'message' => 'get other user success'], 200);
     }
 
     /**
@@ -30,42 +35,14 @@ class UserController extends Controller
         return response()->json(['user' => Auth::user()], 200);
     }
 
-    /**
-     * Get all User.
-     *
-     * @return Response
-     */
-    public function allUsers()
+    public function destroy($id)
     {
-        $iam = Auth::user();
+        User::destroy($id);
 
-        return response()->json(['users' =>  $iam->family->users], 200);
+        return response()->json(['message' =>  'User Deleted Succesfully'], 200);
     }
 
-    /**
-     * Get one user.
-     *
-     * @return Response
-     */
-    public function singleUser($id)
-    {
-        try {
-            $user = User::findOrFail($id);
-            $iam = Auth::user();
-
-            if ($iam->family->id !== $user->family->id) {
-                return response()->json(['message' => 'Cannot See Profile'], 403);
-            }
-
-            return response()->json(['user' => $user], 200);
-
-        } catch (\Exception $e) {
-
-            return response()->json(['message' => 'User Not Found!'], 404);
-        }
-    }
-
-    public function editProfile(Request $request)
+    public function update(Request $request)
     {
         //validate incoming request
         $this->validate($request, [
@@ -78,17 +55,18 @@ class UserController extends Controller
         try {
             $iam = Auth::user();
 
-            ($request->input('name')) ? $name = $request->input('name') : $name = null;
-            ($request->input('hp')) ? $hp = $request->input('hp') : $hp = null;
-            ($request->input('address')) ? $address = $request->input('address') : $address = null;
-            ($request->input('status')) ? $status = $request->input('status') : $status = null;
+            $input = $request->all();
 
             $user = User::where('id', $iam->id)->first();
             $user->update([
-              'name' => $name,
-              'hp' => $hp,
-              'address' => $address,
-              'status' => $status
+              'name' => $input['name'],
+              'hp' => $input['hp'],
+              'address' => $input['address'],
+              'status' => $input['status'],
+              'email' => $input['email'],
+              'majors' => $input['majors'],
+              'faculty' => $input['faculty'],
+              'username' => $input['username']
             ]);
 
             //return successful response
@@ -96,6 +74,39 @@ class UserController extends Controller
         } catch (\Exception $e) {
             //return error message
             return response()->json(['message' => 'Edit Profile Failed!'], 409);
+        }
+    }
+
+    public function updateOther(Request $request, $id)
+    {
+        //validate incoming request
+        $this->validate($request, [
+            'name' => 'string',
+            'hp' => 'string',
+            'address' => 'string',
+            'status' => 'string'
+        ]);
+
+        try {
+            $input = $request->all();
+
+            $user = User::findOrFail($id);
+            $user->update([
+              'name' => $input['name'],
+              'hp' => $input['hp'],
+              'address' => $input['address'],
+              'status' => $input['status'],
+              'email' => $input['email'],
+              'majors' => $input['majors'],
+              'faculty' => $input['faculty'],
+              'username' => $input['username']
+            ]);
+
+            //return successful response
+            return response()->json(['user' => $user, 'message' => 'Other Profile Edited Succesfully'], 200);
+        } catch (\Exception $e) {
+            //return error message
+            return response()->json(['message' => 'Edit Other Profile Failed!'], 409);
         }
     }
 
@@ -108,8 +119,6 @@ class UserController extends Controller
 
         try {
             $iam = Auth::user();
-
-            ($request->input('status')) ? $status = $request->input('status') : $status = null;
 
             $user = User::where('id', $iam->id)->first();
 
@@ -160,47 +169,5 @@ class UserController extends Controller
             //return error message
             return response()->json(['message' => 'You Have Entered Wrong Password!'], 409);
         }
-    }
-
-    public function storeGCMToken(Request $request)
-    {
-      //validate incoming request
-      $this->validate($request, [
-          'gcmtoken' => 'string'
-      ]);
-
-      try {
-          $iam = Auth::user();
-
-          $iam->update([
-            'gcmtoken' => $request->input('gcmtoken')
-          ]);
-
-          //return successful response
-          return response()->json(['GCM Token' => $request->input('gcmtoken'), 'message' => 'GCM Token Stored Succesfully'], 200);
-      } catch (\Exception $e) {
-          //return error message
-          return response()->json(['message' => 'Store GCM Token Failed!'], 409);
-      }
-    }
-
-    public function updateStatus(Request $request, $id)
-    {dd(Carbon::now()->toDateTimeString());
-      //validate incoming request
-      $this->validate($request, [
-          'status' => 'boolean'
-      ]);
-
-      return $request->all();
-    }
-
-    public function updateTimer(Request $request, $id)
-    {
-      //validate incoming request
-      $this->validate($request, [
-          'until' => 'date_format:H:i:s'
-      ]);
-
-      return $request->all();
     }
 }
